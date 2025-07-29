@@ -1,0 +1,27 @@
+# Ambientes virtuais
+/venv/
+/.venv/
+/env/
+/ENV/
+
+# Arquivos de segredo
+.env
+
+# Diretório de dados (para não enviar arquivos CSV grandes)
+/data/
+
+# Arquivos de cache e compilados do Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+
+# Arquivos de configuração do Databricks local
+.databricks/
+
+# Arquivos de sistema operacional
+.DS_Store
+Thumbs.db
