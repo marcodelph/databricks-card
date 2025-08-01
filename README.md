@@ -18,7 +18,7 @@ A solução foi desenhada sobre dois padrões de arquitetura de dados líderes d
 * **Arquitetura Híbrida (Lambda Simplificada):** Combina um pipeline **batch** para análises profundas e criação de perfis de usuário com um pipeline **streaming** para enriquecimento e alertas em tempo real.
 * **Arquitetura Medallion:** Organiza os dados em camadas de qualidade progressiva (`raw`, `core`, `analytics`) dentro do Data Lake, garantindo governança e rastreabilidade.
 
-*<p align="center">[INSIRA UM DIAGRAMA DA SUA ARQUITETURA AQUI QUANDO FINALIZARMOS]</p>*
+
 
 ## 🔀 4. Fluxo do Pipeline de Dados
 
