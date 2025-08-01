@@ -18,8 +18,6 @@ A solução foi desenhada sobre dois padrões de arquitetura de dados líderes d
 * **Arquitetura Híbrida (Lambda Simplificada):** Combina um pipeline **batch** para análises profundas e criação de perfis de usuário com um pipeline **streaming** para enriquecimento e alertas em tempo real.
 * **Arquitetura Medallion:** Organiza os dados em camadas de qualidade progressiva (`raw`, `core`, `analytics`) dentro do Data Lake, garantindo governança e rastreabilidade.
 
-
-
 ## 🔀 4. Fluxo do Pipeline de Dados
 
 A jornada do dado através do pipeline ocorre em quatro etapas principais:
@@ -35,10 +33,11 @@ A jornada do dado através do pipeline ocorre em quatro etapas principais:
 | :--- | :--- | :--- |
 | **Plataforma Cloud** | Microsoft Azure | Provedor de todos os serviços de nuvem. |
 | **Ingestão de Streaming** | Azure Event Hubs | Serviço de mensageria para receber o fluxo de dados. |
-| **Armazenamento** | Azure Data Lake Storage Gen2 | Data Lake central para as camadas `raw`, `core` e `analytics`. |
-| **Processamento** | Azure Databricks | Plataforma unificada para execução de jobs Spark com PySpark. |
+| **Armazenamento** | Azure Data Lake Storage Gen2 | Data Lake central para as camadas `raw`, `core`, `analytics`. |
+| **Processamento** | Azure Databricks | Plataforma unificada para execução de jobs **PySpark** (incluindo o **Hive Metastore** para gerenciamento de metadados). |
 | **Formato dos Dados** | Delta Lake | Formato de tabela que traz transações ACID ao Data Lake. |
 | **Segurança** | Azure Key Vault & Microsoft Entra ID | Gestão de segredos e controle de acesso via Service Principal. |
+| **Conceitos Fundamentais**| Apache Hadoop | O projeto aplica os conceitos do ecossistema Hadoop em um paradigma moderno: o **ADLS Gen2** como substituto do HDFS para armazenamento distribuído e o **Spark** como motor de processamento. |
 | **Linguagens** | Python & SQL | Linguagens usadas para o produtor e para os notebooks Spark. |
 | **Dev Tools** | Git & GitHub | Versionamento de código. |
 
@@ -46,6 +45,7 @@ A jornada do dado através do pipeline ocorre em quatro etapas principais:
 
 Este projeto foi construído com foco em práticas profissionais de engenharia de software e DevOps:
 
-* **Segurança (SecOps):** A comunicação entre o Databricks e o Data Lake é autenticada via **Microsoft Entra ID (Service Principal)**, seguindo o **Princípio do Menor Privilégio** com papéis RBAC específicos (`Storage Blob Data Contributor`). Segredos e chaves de acesso são gerenciados de forma segura no **Azure Key Vault**, nunca hardcoded.
+* **Segurança e Governança Robusta (SecOps):** A comunicação entre Databricks e Data Lake é autenticada via **Microsoft Entra ID (Service Principal)**, seguindo o **Princípio do Menor Privilégio** e aplicando uma **governança de dados robusta** com papéis RBAC específicos. Segredos são centralizados e gerenciados de forma segura no **Azure Key Vault**.
 * **Otimização de Custos (FinOps):** Todas as decisões de infraestrutura foram tomadas com o custo em mente: uso do tier **Standard** do Databricks, cluster **Single Node** que é desligado automaticamente (`auto-terminate`), e uso do gatilho **`trigger(availableNow=True)`** para economizar recursos de computação.
-* **Orquestração (DataOps):** O pipeline foi projetado para ser totalmente automatizado. Os notebooks são orquestrados via **Databricks Jobs**, com o job batch rodando em um cronograma agendado (diário) e os jobs de streaming sendo acionados conforme a necessidade.
+* **Automação e Orquestração (DevOps/DataOps):** O pipeline foi projetado para ser totalmente automatizado. Os notebooks são orquestrados via **Databricks Jobs**, com o job batch rodando em um cronograma diário, demonstrando práticas de **DevOps** para o ciclo de vida dos dados.
+
