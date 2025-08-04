@@ -5,7 +5,7 @@ name: Deploy Databricks Pipeline
 on:
   push:
     branches:
-      - main 
+      - main
 
 jobs:
   deploy:
@@ -18,13 +18,6 @@ jobs:
       - name: Setup Databricks CLI
         uses: databricks/setup-cli@v0.222.0
 
-   
-      - name: Print databricks.yml content
-        run: |
-          echo "--- Conteúdo do databricks.yml que o Actions está lendo ---"
-          cat databricks.yml
-          echo "------------------------------------------------------------"
-          
       - name: Deploy to Databricks
         run: databricks bundle deploy
         env:
