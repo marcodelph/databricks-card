@@ -82,8 +82,9 @@ graph TD
 ## ✅ DevOps e Qualidade de Dados
 
 * **Qualidade de Dados com PyDeequ:** A confiabilidade do pipeline foi garantida com a biblioteca **PyDeequ**. Foi implementado um conjunto de testes declarativos que rodam como a etapa final do Job, validando a integridade dos dados na camada `core` (unicidade, valores não-negativos, etc.).
-* **Orquestração como Código (Jobs as Code):** Todo o pipeline, incluindo a sequência de tarefas **(DAG)**, a configuração dos clusters e o agendamento, é definido como código em um arquivo **`databricks.yml`**. Esta abordagem de **Jobs as Code** com Databricks Asset Bundles permite que a orquestração seja versionada no Git e implantada de forma automatizada com a **Databricks CLI**, garantindo consistência e reprodutibilidade.
-* **Segurança e Governança:** A comunicação entre Databricks e Data Lake é autenticada via **Microsoft Entra ID (Service Principal)**, seguindo o **Princípio do Menor Privilégio** com papéis RBAC específicos. Segredos são gerenciados de forma segura no **Azure Key Vault**.
+* **Orquestração como Código (Jobs as Code):** Todo o pipeline, incluindo a sequência de tarefas **(DAG)**, a configuração dos clusters e as bibliotecas, é definido como código em um arquivo **`databricks.yml`**. Esta abordagem com Databricks Asset Bundles permite que a orquestração seja versionada no Git, garantindo consistência e reprodutibilidade.
+* **CI/CD com GitHub Actions:** O deploy do pipeline é totalmente automatizado. Um workflow no **GitHub Actions** é acionado a cada `push` na branch `main`, validando e implantando o `bundle` no Databricks. Isso garante que toda mudança no código passe por um processo de entrega contínua, eliminando deploys manuais.
+* **Segurança e Governança:** A comunicação entre Databricks e Data Lake é autenticada via **Microsoft Entra ID (Service Principal)**, seguindo o **Princípio do Menor Privilégio** com papéis RBAC específicos. Segredos são gerenciados de forma segura nos **GitHub Secrets** e injetados no ambiente de CI/CD.
 
 ***
 
