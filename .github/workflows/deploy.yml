@@ -1,10 +1,11 @@
 # Arquivo: .github/workflows/deploy.yml
+
 name: Deploy Databricks Pipeline
 
 on:
   push:
     branches:
-      - main
+      - main 
 
 jobs:
   deploy:
@@ -17,12 +18,18 @@ jobs:
       - name: Setup Databricks CLI
         uses: databricks/setup-cli@v0.222.0
 
+   
+      - name: Print databricks.yml content
+        run: |
+          echo "--- Conteúdo do databricks.yml que o Actions está lendo ---"
+          cat databricks.yml
+          echo "------------------------------------------------------------"
+          
       - name: Deploy to Databricks
-        run: databricks bundle deploy -t dev
+        run: databricks bundle deploy
         env:
           DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
-          
           BUNDLE_VAR_client_id: ${{ secrets.AZURE_CLIENT_ID }}
           BUNDLE_VAR_client_secret: ${{ secrets.AZURE_CLIENT_SECRET }}
           BUNDLE_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
