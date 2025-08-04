@@ -16,13 +16,15 @@ jobs:
       - name: Setup Databricks CLI
         uses: databricks/setup-cli@v0.262.0
 
-      - name: Inject secrets into databricks.yml
+      - name: Inject secrets and vars into databricks.yml
         run: |
+          sed -i 's%<STORAGE_ACCOUNT_NAME>%${{ vars.STORAGE_ACCOUNT_NAME }}%g' databricks.yml
           sed -i 's%<AZURE_CLIENT_ID>%${{ secrets.AZURE_CLIENT_ID }}%g' databricks.yml
           sed -i 's%<AZURE_CLIENT_SECRET>%${{ secrets.AZURE_CLIENT_SECRET }}%g' databricks.yml
           sed -i 's%<AZURE_TENANT_ID>%${{ secrets.AZURE_TENANT_ID }}%g' databricks.yml
           sed -i 's%<EH_CONNECTION_STRING>%${{ secrets.EH_CONNECTION_STRING }}%g' databricks.yml
         env:
+          STORAGE_ACCOUNT_NAME: ${{ vars.STORAGE_ACCOUNT_NAME }}
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}

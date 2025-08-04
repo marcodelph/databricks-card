@@ -12,17 +12,18 @@ resources:
         spark_version: "13.3.x-scala2.12"
         node_type_id: "Standard_F4" 
         num_workers: 0
+        
         custom_tags:
           ResourceClass: "SingleNode"
 
         spark_conf:
           spark.databricks.cluster.profile: "singleNode"
           spark.master: "local[*]"
-          spark.hadoop.fs.azure.account.auth.type.adlshydra.dfs.core.windows.net: "OAuth"
-          spark.hadoop.fs.azure.account.oauth.provider.type.adlshydra.dfs.core.windows.net: "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider"
-          spark.hadoop.fs.azure.account.oauth2.client.id.adlshydra.dfs.core.windows.net: "<AZURE_CLIENT_ID>"
-          spark.hadoop.fs.azure.account.oauth2.client.secret.adlshydra.dfs.core.windows.net: "<AZURE_CLIENT_SECRET>"
-          spark.hadoop.fs.azure.account.oauth2.client.endpoint.adlshydra.dfs.core.windows.net: "https://login.microsoftonline.com/<AZURE_TENANT_ID>/oauth2/token"
+          spark.hadoop.fs.azure.account.auth.type.<STORAGE_ACCOUNT_NAME>.dfs.core.windows.net: "OAuth"
+          spark.hadoop.fs.azure.account.oauth.provider.type.<STORAGE_ACCOUNT_NAME>.dfs.core.windows.net: "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider"
+          spark.hadoop.fs.azure.account.oauth2.client.id.<STORAGE_ACCOUNT_NAME>.dfs.core.windows.net: "<AZURE_CLIENT_ID>"
+          spark.hadoop.fs.azure.account.oauth2.client.secret.<STORAGE_ACCOUNT_NAME>.dfs.core.windows.net: "<AZURE_CLIENT_SECRET>"
+          spark.hadoop.fs.azure.account.oauth2.client.endpoint.<STORAGE_ACCOUNT_NAME>.dfs.core.windows.net: "https://login.microsoftonline.com/<AZURE_TENANT_ID>/oauth2/token"
         
         spark_env_vars:
           EVENT_HUB_CONNECTION_STRING: "<EH_CONNECTION_STRING>"
@@ -48,5 +49,5 @@ resources:
           new_cluster: *job_cluster_definition
       
       schedule:
-        quartz_cron_expression: "0 0 * * * ?" # A cada 1 hora
+        quartz_cron_expression: "0 0 * * * ?"
         timezone_id: "America/Sao_Paulo"
