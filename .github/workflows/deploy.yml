@@ -11,17 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      # Baixar o código do seu repositório
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # Instalar a CLI do Databricks
       - name: Setup Databricks CLI
         uses: databricks/setup-cli@v0.222.0
 
-      # Fazer o deploy com o Databricks Bundle (usando variáveis de ambiente)
       - name: Deploy to Databricks
-        run: databricks bundle deploy
+        run: databricks bundle deploy -t dev
         env:
           DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
@@ -30,4 +27,3 @@ jobs:
           BUNDLE_VAR_client_secret: ${{ secrets.AZURE_CLIENT_SECRET }}
           BUNDLE_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
           BUNDLE_VAR_eh_connection_string: ${{ secrets.EH_CONNECTION_STRING }}
-          BUNDLE_VAR_storage_account_name: adlshydra
