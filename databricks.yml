@@ -1,10 +1,55 @@
 # Arquivo: databricks.yml
+
 bundle:
   name: hydra-anomaly-pipeline
 
-variables:
-  client_id: { type: string, description: "Azure SP Client ID" }
-  client_secret: { type: string, description: "Azure SP Client Secret" }
-  tenant_id: { type: string, description: "Azure Tenant ID" }
-  eh_connection_string: { type: string, description: "Event Hubs Connection String" }
-  storage_account_name: { type: string, description: "Nome da Conta de Armazenamento ADLS" }
+bundle:
+  name: hydra-anomaly-pipeline
+
+resources:
+  jobs:
+    pipeline_de_anomalias_bundle:
+      name: "[BUNDLE] Pipeline de Anomalias Financeiras"
+      
+      new_cluster: &job_cluster_definition
+        spark_version: "13.3.x-scala2.12"
+        node_type_id: "Standard_F4" 
+        num_workers: 0
+        custom_tags:
+          ResourceClass: "SingleNode"
+
+        spark_conf:
+          spark.databricks.cluster.profile: "singleNode"
+          spark.master: "local[*]"
+          spark.hadoop.fs.azure.account.auth.type.adlshydra.dfs.core.windows.net: "OAuth"
+          spark.hadoop.fs.azure.account.oauth.provider.type.adlshydra.dfs.core.windows.net: "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider"
+          spark.hadoop.fs.azure.account.oauth2.client.id.adlshydra.dfs.core.windows.net: "<AZURE_CLIENT_ID>"
+          spark.hadoop.fs.azure.account.oauth2.client.secret.adlshydra.dfs.core.windows.net: "<AZURE_CLIENT_SECRET>"
+          spark.hadoop.fs.azure.account.oauth2.client.endpoint.adlshydra.dfs.core.windows.net: "https://login.microsoftonline.com/<AZURE_TENANT_ID>/oauth2/token"
+        
+        spark_env_vars:
+          EVENT_HUB_CONNECTION_STRING: "<EH_CONNECTION_STRING>"
+
+      tasks:
+        - task_key: "Atualizar_Perfis_Batch"
+          notebook_task:
+            notebook_path: "notebooks/03_batch_profiling.ipynb"
+          new_cluster: *job_cluster_definition
+
+        - task_key: "Detectar_Alertas_Streaming"
+          depends_on:
+            - task_key: "Atualizar_Perfis_Batch"
+          notebook_task:
+            notebook_path: "notebooks/02_realtime_alerts.ipynb"
+          new_cluster: *job_cluster_definition
+
+        - task_key: "Validar_Qualidade_Dados"
+          depends_on:
+            - task_key: "Detectar_Alertas_Streaming"
+          notebook_task:
+            notebook_path: "notebooks/04_data_quality_checks.ipynb"
+          new_cluster: *job_cluster_definition
+      
+      schedule:
+        quartz_cron_expression: "0 0 * * * ?" # A cada 1 hora
+        timezone_id: "America/Sao_Paulo"
