@@ -18,6 +18,13 @@ jobs:
       - name: Setup Databricks CLI
         uses: databricks/setup-cli@v0.222.0
 
+       # PASSO DE VERIFICAÇÃO ADICIONADO
+      - name: Print databricks.yml content for verification
+        run: |
+          echo "--- Conteúdo do databricks.yml que o Actions está lendo ---"
+          cat databricks.yml
+          echo "------------------------------------------------------------"
+
       - name: Build Spark Config
         id: build_spark_config
         run: |
