@@ -1,10 +1,11 @@
 # Arquivo: .github/workflows/deploy.yml
+
 name: Deploy Databricks Pipeline
 
 on:
   push:
     branches:
-      - main
+      - debug-cicd # Alteração feita aqui
 
 jobs:
   deploy:
@@ -15,16 +16,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Databricks CLI
-        uses: databricks/setup-cli@v0.222.0
+        uses: databricks/setup-cli@v0.262.0
 
       - name: Deploy to Databricks
         run: databricks bundle deploy -t dev
         env:
           DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
-          
           BUNDLE_VAR_client_id: ${{ secrets.AZURE_CLIENT_ID }}
           BUNDLE_VAR_client_secret: ${{ secrets.AZURE_CLIENT_SECRET }}
           BUNDLE_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
           BUNDLE_VAR_eh_connection_string: ${{ secrets.EH_CONNECTION_STRING }}
-          BUNDLE_VAR_storage_account_name: "adlshydra"
+          BUNDLE_VAR_storage_account_name: ${{ vars.STORAGE_ACCOUNT_NAME }}
