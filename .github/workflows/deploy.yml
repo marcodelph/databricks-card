@@ -2,7 +2,6 @@
 
 name: Deploy Databricks Pipeline
 
-# Gatilho: roda sempre que houver um push na branch 'main'
 on:
   push:
     branches:
@@ -17,14 +16,19 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # Instalar a CLI do Databricks na máquina virtual do GitHub
+      # Instalar a CLI do Databricks
       - name: Setup Databricks CLI
         uses: databricks/setup-cli@v0.222.0
 
-      # Fazer o deploy com o Databricks Bundle
+      # Fazer o deploy com o Databricks Bundle (usando variáveis de ambiente)
       - name: Deploy to Databricks
-        run: |
-          databricks bundle deploy --var "client_id=${{ secrets.AZURE_CLIENT_ID }}& client_secret=${{ secrets.AZURE_CLIENT_SECRET }}& tenant_id=${{ secrets.AZURE_TENANT_ID }}& eh_connection_string=${{ secrets.EH_CONNECTION_STRING }}"
+        run: databricks bundle deploy
         env:
           DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          
+          # Segredos para as variáveis do bundle, com o prefixo BUNDLE_VAR_
+          BUNDLE_VAR_client_id: ${{ secrets.AZURE_CLIENT_ID }}
+          BUNDLE_VAR_client_secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          BUNDLE_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+          BUNDLE_VAR_eh_connection_string: ${{ secrets.EH_CONNECTION_STRING }}
