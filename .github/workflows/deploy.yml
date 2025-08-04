@@ -24,8 +24,7 @@ jobs:
           DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
           
-          # Use o prefixo correto: DATABRICKS_BUNDLE_VAR_
-          DATABRICKS_BUNDLE_VAR_client_id: ${{ secrets.AZURE_CLIENT_ID }}
+          BUNDLE_VAR_client_id: ${{ secrets.AZURE_CLIENT_ID }}
           DATABRICKS_BUNDLE_VAR_client_secret: ${{ secrets.AZURE_CLIENT_SECRET }}
           DATABRICKS_BUNDLE_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
           DATABRICKS_BUNDLE_VAR_eh_connection_string: ${{ secrets.EH_CONNECTION_STRING }}
