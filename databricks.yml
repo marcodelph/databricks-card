@@ -48,6 +48,6 @@ resources:
             notebook_path: "notebooks/04_data_quality_checks.ipynb"
           new_cluster: *job_cluster_definition
       
-      schedule:
-        quartz_cron_expression: "0 0 * * * ?"
-        timezone_id: "America/Sao_Paulo"
+      #schedule:
+        #quartz_cron_expression: "0 0 * * * ?"
+        #timezone_id: "America/Sao_Paulo"
