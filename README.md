@@ -1,51 +1,99 @@
-# Pipeline Híbrido de Detecção de Anomalias Financeiras
+# Projeto Hydra: Pipeline de Dados Híbrido com Azure e Databricks
 
-![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)
+![Status: Concluído](https://img.shields.io/badge/status-concluído-brightgreen)
+![Tecnologia](https://img.shields.io/badge/Azure-0078D4?style=for-the-badge&logo=microsoftazure&logoColor=white)
+![Framework](https://img.shields.io/badge/Databricks-E25A1C?style=for-the-badge&logo=databricks&logoColor=white)
+![Linguagem](https://img.shields.io/badge/PySpark-F88B01?style=for-the-badge&logo=apache-spark&logoColor=white)
 
+***
 
-## 📖 1. Resumo
+## 🎯 Visão Geral do Projeto
+Este projeto implementa um pipeline de dados de ponta-a-ponta na nuvem **Azure**, com foco em processamento **híbrido (streaming e batch)**. O objetivo foi aplicar as melhores práticas de engenharia de dados utilizando uma stack moderna, com **Azure Databricks** para processamento com **PySpark**, **Delta Lake** como camada de armazenamento Lakehouse, e **Azure Functions** para ingestão serverless.
 
-Este projeto consiste na construção de um pipeline de detecção de fraude em tempo real, demonstrando uma arquitetura de dados moderna e escalável na nuvem. Utilizando o **Microsoft Azure**, o pipeline ingere um fluxo contínuo de transações simuladas via **Azure Event Hubs**. O processamento e a transformação dos dados são orquestrados pelo **Azure Databricks**, que emprega **PySpark** e **Spark Structured Streaming** para aplicar a arquitetura Medallion (`raw`, `core`, `analytics`) sobre o **Delta Lake**. A detecção de anomalias é feita com uma abordagem híbrida, combinando regras de negócio em tempo real com a criação de perfis de usuário em batch.
+Este repositório serve como um portfólio prático, demonstrando competências em **arquitetura de dados**, processamento distribuído, qualidade de dados e **práticas de DevOps** para automação e orquestração de pipelines.
 
-## 🎯 2. O Problema de Negócio
+***
 
-Sistemas tradicionais de detecção de fraude frequentemente se baseiam em regras estáticas (ex: "toda transação acima de R$ 5.000 é suspeita"). Essa abordagem gera muitos falsos positivos e não captura anomalias sutis, pois o que é "normal" para um usuário pode ser altamente anômalo para outro. Este projeto resolve esse problema através da detecção contextual e individualizada.
+## 🛠️ Ferramentas e Tecnologias
+| Ferramenta | Propósito |
+| :--- | :--- |
+| **Azure Functions** | **Ingestão Serverless:** Executa um produtor de eventos agendado para simular um fluxo contínuo de dados. |
+| **Azure Event Hubs** | **Buffer de Streaming:** Serviço de mensageria que recebe o fluxo de dados e o disponibiliza para consumo. |
+| **Azure Data Lake Gen2**| **Data Lakehouse:** Camada de armazenamento para as tabelas Delta nas camadas `raw`, `core` e `analytics`. |
+| **Azure Databricks** | **Plataforma Unificada:** Ambiente para desenvolvimento, execução e orquestração de todo o pipeline com PySpark. |
+| **Delta Lake** | **Camada de Armazenamento:** Formato de tabela que garante transações ACID, confiabilidade e performance ao Data Lake. |
+| **PySpark** | **Processamento:** Utilizado para todas as transformações, incluindo **Streaming Estruturado** e lógicas avançadas com **Window Functions**. |
+| **PyDeequ** | **Qualidade de Dados:** Framework para definir e executar testes de qualidade de dados de forma declarativa sobre os DataFrames. |
+| **Databricks Jobs & Bundles**| **Orquestração & DevOps:** Automação do pipeline (DAG) e definição da infraestrutura do Job como código (`databricks.yml`). |
+| **Git & GitHub** | **Versionamento:** Sistema para versionamento de todo o código do projeto, incluindo notebooks e definições de job. |
 
-## 🏗️ 3. A Solução Arquitetural
+***
 
-A solução foi desenhada sobre dois padrões de arquitetura de dados líderes de mercado:
+## 🏗️ Arquitetura da Solução
+A solução utiliza uma arquitetura híbrida, onde um caminho batch enriquece os dados que são processados em tempo real pelo caminho de streaming. A orquestração é gerenciada pelo Databricks Jobs, seguindo a arquitetura **Medallion**.
 
-* **Arquitetura Híbrida (Lambda Simplificada):** Combina um pipeline **batch** para análises profundas e criação de perfis de usuário com um pipeline **streaming** para enriquecimento e alertas em tempo real.
-* **Arquitetura Medallion:** Organiza os dados em camadas de qualidade progressiva (`raw`, `core`, `analytics`) dentro do Data Lake, garantindo governança e rastreabilidade.
+```mermaid
+graph TD
+    subgraph Azure Cloud
+        direction LR
+        subgraph Ingestão Serverless
+            A[Azure Function] -- Gera lote de transações a cada 5 min --> B[Azure Event Hubs];
+        end
+        
+        subgraph Databricks [Plataforma de Dados]
+            direction TB
+            
+            subgraph Pipeline de Ingestão [Streaming]
+                B -- Lê Stream --> C{Notebook 01: Ingestion};
+            end
 
-## 🔀 4. Fluxo do Pipeline de Dados
+            subgraph Pipeline de Alertas [Streaming]
+                F[Core Layer: Perfis] -- Join Estático --> G{Notebook 02: Real-Time Alerts};
+            end
 
-A jornada do dado através do pipeline ocorre em quatro etapas principais:
+            subgraph Pipeline de Perfis [Batch - Job Diário]
+                 E -- Lê Batch --> D{Notebook 03: Profiling};
+            end
+            
+            subgraph Pipeline de Qualidade [Batch]
+                H[Analytics Layer: Alertas] -- Lê Batch --> I{Notebook 04: Quality Checks};
+            end
 
-1.  **Ingestão (Streaming):** Um script Python (`producer.py`) simula um fluxo contínuo de transações, com anomalias contextuais injetadas, e as publica no **Azure Event Hubs**.
-2.  **Camada Raw:** Um notebook Spark Streaming (`01_streaming_ingestion`) consome os dados do Event Hubs, faz uma limpeza mínima e os persiste em formato Delta na camada `raw` do Data Lake, criando uma fonte da verdade imutável.
-3.  **Camada Core:** Um notebook Spark **Batch** (`03_batch_profiling`), orquestrado por um **Databricks Job** diário, lê os dados da camada `raw` e cria perfis de comportamento para cada usuário (gasto médio, desvio padrão, etc.), salvando o resultado na camada `core`.
-4.  **Camada Analytics:** Um segundo notebook Spark Streaming (`02_realtime_alerts`) lê as novas transações da camada `raw` e as enriquece em tempo real, através de um **stream-table join** com os perfis da camada `core`. Se uma transação desvia significativamente do perfil do usuário, um alerta é gerado na camada `analytics`.
+            C -- Salva Stream --> E[Raw Layer: Transações];
+            D -- MERGE --> F;
+            E -- Lê Stream --> G;
+            G -- Salva Stream --> H;
+        end
+    end
 
-## 🛠️ 5. Stack de Tecnologias
+    style A fill:#722bd1,stroke:#333,stroke-width:2px,color:#fff
+    style B fill:#0078D4,stroke:#333,stroke-width:2px,color:#fff
+    style E fill:#add8e6,stroke:#333,stroke-width:2px,color:#000
+    style F fill:#ff7f50,stroke:#333,stroke-width:2px,color:#000
+    style H fill:#3cb371,stroke:#333,stroke-width:2px,color:#000
+```
+* **Raw (Bronze):** Um pipeline de streaming (`01_ingestion`) consome os dados do Event Hubs e os salva em formato Delta, criando uma cópia fiel da origem.
+* **Core (Silver):** Um pipeline batch (`03_profiling`) roda diariamente, lendo os dados da camada `raw` para calcular e atualizar os perfis de comportamento de cada usuário, salvando-os na camada `core`.
+* **Analytics (Gold):** Um segundo pipeline de streaming (`02_alerts`) lê as novas transações da camada `raw`, as enriquece em tempo real com os perfis da camada `core` (**stream-table join**) e salva os resultados na camada `analytics`.
 
-| Categoria | Ferramenta/Serviço | Propósito |
-| :--- | :--- | :--- |
-| **Plataforma Cloud** | Microsoft Azure | Provedor de todos os serviços de nuvem. |
-| **Ingestão de Streaming** | Azure Event Hubs | Serviço de mensageria para receber o fluxo de dados. |
-| **Armazenamento** | Azure Data Lake Storage Gen2 | Data Lake central para as camadas `raw`, `core`, `analytics`. |
-| **Processamento** | Azure Databricks | Plataforma unificada para execução de jobs **PySpark** (incluindo o **Hive Metastore** para gerenciamento de metadados). |
-| **Formato dos Dados** | Delta Lake | Formato de tabela que traz transações ACID ao Data Lake. |
-| **Segurança** | Azure Key Vault & Microsoft Entra ID | Gestão de segredos e controle de acesso via Service Principal. |
-| **Conceitos Fundamentais**| Apache Hadoop | O projeto aplica os conceitos do ecossistema Hadoop em um paradigma moderno: o **ADLS Gen2** como substituto do HDFS para armazenamento distribuído e o **Spark** como motor de processamento. |
-| **Linguagens** | Python & SQL | Linguagens usadas para o produtor e para os notebooks Spark. |
-| **Dev Tools** | Git & GitHub | Versionamento de código. |
+***
 
-## 🚀 6. Conceitos de DevOps e Boas Práticas
+## ✨ Destaques de Engenharia com PySpark
 
-Este projeto foi construído com foco em práticas profissionais de engenharia de software e DevOps:
+* **Engenharia de Features com Window Functions:** Para enriquecer os perfis de usuário, foi utilizada uma **Window Function** (`lag`) no PySpark para calcular o tempo decorrido entre as transações de um mesmo usuário. Essa métrica (`avg_time_between_tx_sec`) demonstra a aplicação de técnicas avançadas de transformação para criar features analíticas complexas.
+* **Processamento de Streaming com Joins:** A lógica de enriquecimento em tempo real foi implementada através de um **join de stream-tabela**, uma técnica do Streaming Estruturado que cruza um fluxo de dados contínuo com uma tabela de dados estática (os perfis de usuário) para adicionar contexto a cada evento.
 
-* **Segurança e Governança Robusta (SecOps):** A comunicação entre Databricks e Data Lake é autenticada via **Microsoft Entra ID (Service Principal)**, seguindo o **Princípio do Menor Privilégio** e aplicando uma **governança de dados robusta** com papéis RBAC específicos. Segredos são centralizados e gerenciados de forma segura no **Azure Key Vault**.
-* **Otimização de Custos (FinOps):** Todas as decisões de infraestrutura foram tomadas com o custo em mente: uso do tier **Standard** do Databricks, cluster **Single Node** que é desligado automaticamente (`auto-terminate`), e uso do gatilho **`trigger(availableNow=True)`** para economizar recursos de computação.
-* **Automação e Orquestração (DevOps/DataOps):** O pipeline foi projetado para ser totalmente automatizado. Os notebooks são orquestrados via **Databricks Jobs**, com o job batch rodando em um cronograma diário, demonstrando práticas de **DevOps** para o ciclo de vida dos dados.
+***
 
+## ✅ DevOps e Qualidade de Dados
+
+* **Qualidade de Dados com PyDeequ:** A confiabilidade do pipeline foi garantida com a biblioteca **PyDeequ**. Foi implementado um conjunto de testes declarativos que rodam como a etapa final do Job, validando a integridade dos dados na camada `core` (unicidade, valores não-negativos, etc.).
+* **Orquestração como Código (Jobs as Code):** Todo o pipeline, incluindo a sequência de tarefas **(DAG)**, a configuração dos clusters e o agendamento, é definido como código em um arquivo **`databricks.yml`**. Esta abordagem de **Jobs as Code** com Databricks Asset Bundles permite que a orquestração seja versionada no Git e implantada de forma automatizada com a **Databricks CLI**, garantindo consistência e reprodutibilidade.
+* **Segurança e Governança:** A comunicação entre Databricks e Data Lake é autenticada via **Microsoft Entra ID (Service Principal)**, seguindo o **Princípio do Menor Privilégio** com papéis RBAC específicos. Segredos são gerenciados de forma segura no **Azure Key Vault**.
+
+***
+
+## 🚀 Próximos Passos
+* **CI/CD com GitHub Actions:** Implementar um workflow no GitHub Actions que, a cada `push` na branch `main`, automaticamente executa o `databricks bundle deploy` para atualizar o Job em produção.
+* **Monitoramento:** Configurar alertas no Azure Monitor para notificar sobre falhas no Job ou na Azure Function.
+* **Infraestrutura como Código (IaC):** Utilizar Terraform ou Bicep para provisionar toda a infraestrutura do Azure (Data Lake, Event Hubs, etc.) de forma automatizada.
