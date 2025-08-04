@@ -1,4 +1,4 @@
-# Projeto Hydra: Pipeline de Dados Híbrido com Azure e Databricks
+# Pipeline de Dados Híbrido com Azure e Databricks
 
 ![Status: Concluído](https://img.shields.io/badge/status-concluído-brightgreen)
 
