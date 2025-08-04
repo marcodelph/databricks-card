@@ -26,7 +26,7 @@ jobs:
           client_secret="${{ secrets.AZURE_CLIENT_SECRET }}"
           tenant_id="${{ secrets.AZURE_TENANT_ID }}"
           
-          spark_json=$(jq -n \
+          spark_json=$(jq -c -n \
             --arg s1 "spark.databricks.cluster.profile" --arg v1 "singleNode" \
             --arg s2 "spark.master" --arg v2 "local[*]" \
             --arg s3 "spark.hadoop.fs.azure.account.auth.type.${storage_name}.dfs.core.windows.net" --arg v3 "OAuth" \
