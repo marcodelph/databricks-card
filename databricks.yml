@@ -3,9 +3,6 @@
 bundle:
   name: hydra-anomaly-pipeline
 
-bundle:
-  name: hydra-anomaly-pipeline
-
 resources:
   jobs:
     pipeline_de_anomalias_bundle:
