@@ -1,0 +1,22 @@
+# .github/workflows/deploy.yml
+name: Deploy Databricks Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Deploy to Databricks
+        run: |
+          databricks bundle deploy --vars "client_id=${{ secrets.AZURE_CLIENT_ID }}, client_secret=${{ secrets.AZURE_CLIENT_SECRET }}, tenant_id=${{ secrets.AZURE_TENANT_ID }}, eh_connection_string=${{ secrets.EH_CONNECTION_STRING }}"
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}

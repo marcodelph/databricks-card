@@ -1,0 +1,53 @@
+bundle:
+  name: hydra-anomaly-pipeline
+
+# Definimos as variáveis que serão injetadas pelo CI/CD
+variables:
+  client_id: { type: string }
+  client_secret: { type: string, sensitive: true }
+  tenant_id: { type: string }
+  eh_connection_string: { type: string, sensitive: true }
+  storage_account_name: { type: string, default: "adlshydra" }
+
+resources:
+  jobs:
+    pipeline_de_anomalias_bundle:
+      name: "[BUNDLE] Pipeline de Anomalias Financeiras"
+      
+      new_cluster: &job_cluster_definition
+        spark_version: "13.3.x-scala2.12"
+        node_type_id: "Standard_F4" 
+        num_workers: 0
+        custom_tags:
+          ResourceClass: "SingleNode"
+        spark_conf:
+          spark.databricks.cluster.profile: "singleNode"
+          spark.master: "local[*]"
+          spark.hadoop.fs.azure.account.auth.type.${var.storage_account_name}.dfs.core.windows.net: "OAuth"
+          spark.hadoop.fs.azure.account.oauth.provider.type.${var.storage_account_name}.dfs.core.windows.net: "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider"
+          spark.hadoop.fs.azure.account.oauth2.client.id.${var.storage_account_name}.dfs.core.windows.net: "${var.client_id}"
+          spark.hadoop.fs.azure.account.oauth2.client.secret.${var.storage_account_name}.dfs.core.windows.net: "${var.client_secret}"
+          spark.hadoop.fs.azure.account.oauth2.client.endpoint.${var.storage_account_name}.dfs.core.windows.net: "https://login.microsoftonline.com/${var.tenant_id}/oauth2/token"
+        spark_env_vars:
+          EVENT_HUB_CONNECTION_STRING: "${var.eh_connection_string}"
+
+      tasks:
+        - task_key: "Atualizar_Perfis_Batch"
+          notebook_task:
+            notebook_path: "notebooks/03_batch_profiling.ipynb"
+          new_cluster: *job_cluster_definition
+
+        - task_key: "Detectar_Alertas_Streaming"
+          depends_on:
+            - task_key: "Atualizar_Perfis_Batch"
+          notebook_task:
+            notebook_path: "notebooks/02_realtime_alerts.ipynb"
+          new_cluster: *job_cluster_definition
+
+        - task_key: "Validar_Qualidade_Dados"
+          depends_on:
+            - task_key: "Detectar_Alertas_Streaming"
+          notebook_task:
+            notebook_path: "notebooks/04_data_quality_checks.ipynb"
+          new_cluster: *job_cluster_definition
+      
