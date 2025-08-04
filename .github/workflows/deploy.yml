@@ -1,4 +1,3 @@
-# Arquivo: .github/workflows/deploy.yml
 name: Deploy Databricks Pipeline
 
 on:
@@ -24,7 +23,6 @@ jobs:
           sed -i 's%<AZURE_TENANT_ID>%${{ secrets.AZURE_TENANT_ID }}%g' databricks.yml
           sed -i 's%<EH_CONNECTION_STRING>%${{ secrets.EH_CONNECTION_STRING }}%g' databricks.yml
         env:
-          # Para que o sed funcione, os segredos precisam estar no ambiente
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
