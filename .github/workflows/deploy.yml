@@ -1,5 +1,4 @@
 # Arquivo: .github/workflows/deploy.yml
-
 name: Deploy Databricks Pipeline
 
 on:
@@ -27,8 +26,8 @@ jobs:
           DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
           
-          # Segredos para as variáveis do bundle, com o prefixo BUNDLE_VAR_
           BUNDLE_VAR_client_id: ${{ secrets.AZURE_CLIENT_ID }}
           BUNDLE_VAR_client_secret: ${{ secrets.AZURE_CLIENT_SECRET }}
           BUNDLE_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
           BUNDLE_VAR_eh_connection_string: ${{ secrets.EH_CONNECTION_STRING }}
+          BUNDLE_VAR_storage_account_name: "adlshydra"
