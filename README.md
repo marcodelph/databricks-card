@@ -31,43 +31,40 @@ A solução utiliza uma arquitetura híbrida, onde um caminho batch enriquece os
 
 ```mermaid
 graph TD
-    subgraph Azure Cloud
-        direction LR
-        subgraph Ingestão Serverless
-            A[Azure Function] -- Gera lote de transações a cada 5 min --> B[Azure Event Hubs];
-        end
-        
-        subgraph Databricks [Plataforma de Dados]
-            direction TB
-            
-            subgraph Pipeline de Ingestão [Streaming]
-                B -- Lê Stream --> C{Notebook 01: Ingestion};
-            end
-
-            subgraph Pipeline de Alertas [Streaming]
-                F[Core Layer: Perfis] -- Join Estático --> G{Notebook 02: Real-Time Alerts};
-            end
-
-            subgraph Pipeline de Perfis [Batch - Job Diário]
-                 E -- Lê Batch --> D{Notebook 03: Profiling};
-            end
-            
-            subgraph Pipeline de Qualidade [Batch]
-                H[Analytics Layer: Alertas] -- Lê Batch --> I{Notebook 04: Quality Checks};
-            end
-
-            C -- Salva Stream --> E[Raw Layer: Transações];
-            D -- MERGE --> F;
-            E -- Lê Stream --> G;
-            G -- Salva Stream --> H;
-        end
+    subgraph "Ingestão (Azure)"
+        A[Azure Function] --> B[Azure Event Hubs];
     end
 
-    style A fill:#722bd1,stroke:#333,stroke-width:2px,color:#fff
-    style B fill:#0078D4,stroke:#333,stroke-width:2px,color:#fff
-    style E fill:#add8e6,stroke:#333,stroke-width:2px,color:#000
-    style F fill:#ff7f50,stroke:#333,stroke-width:2px,color:#000
-    style H fill:#3cb371,stroke:#333,stroke-width:2px,color:#000
+    subgraph "Processamento (Databricks)"
+        P[PySpark Engine]
+    end
+
+    subgraph "Armazenamento (ADLS Gen2)"
+        E[Raw Layer]
+        F[Core Layer]
+        H[Analytics Layer]
+    end
+
+    B -- "Streaming Ingestion" --> E;
+    E -- "Batch Profiling" --> P;
+    P -- "MERGE" --> F;
+    E -- "Real-time Stream" --> P;
+    F -- "Enrichment Join" --> P;
+    P -- "Alerts" --> H;
+    
+    classDef ingest fill:#722bd1,stroke:#333,stroke-width:2px,color:#fff;
+    classDef buffer fill:#0078D4,stroke:#333,stroke-width:2px,color:#fff;
+    classDef databricks fill:#E25A1C,stroke:#333,stroke-width:2px,color:#fff;
+    classDef raw fill:#add8e6,stroke:#333,stroke-width:2px,color:#000;
+    classDef core fill:#ff7f50,stroke:#333,stroke-width:2px,color:#000;
+    classDef analytics fill:#3cb371,stroke:#333,stroke-width:2px,color:#000;
+
+    class A ingest;
+    class B buffer;
+    class P databricks;
+    class E raw;
+    class F core;
+    class H analytics;
 ```
 * **Raw (Bronze):** Um pipeline de streaming (`01_ingestion`) consome os dados do Event Hubs e os salva em formato Delta, criando uma cópia fiel da origem.
 * **Core (Silver):** Um pipeline batch (`03_profiling`) roda diariamente, lendo os dados da camada `raw` para calcular e atualizar os perfis de comportamento de cada usuário, salvando-os na camada `core`.
