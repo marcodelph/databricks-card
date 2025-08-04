@@ -73,8 +73,5 @@ resource "databricks_job" "pipeline_de_anomalias_bundle" {
     }
   }
 
-  schedule {
-    quartz_cron_expression = "0 0 * * * ?"
-    timezone_id            = "America/Sao_Paulo"
-  }
+
 }
