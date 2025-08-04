@@ -28,4 +28,4 @@ jobs:
           BUNDLE_VAR_client_secret: ${{ secrets.AZURE_CLIENT_SECRET }}
           BUNDLE_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
           BUNDLE_VAR_eh_connection_string: ${{ secrets.EH_CONNECTION_STRING }}
-          DATABRICKS_BUNDLE_VAR_storage_account_name: ${{ vars.STORAGE_ACCOUNT_NAME }}
+          BUNDLE_VAR_storage_account_name: ${{ vars.STORAGE_ACCOUNT_NAME }}
