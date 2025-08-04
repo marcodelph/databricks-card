@@ -1,4 +1,4 @@
-
+# Arquivo: .github/workflows/deploy.yml
 
 name: Deploy Databricks Pipeline
 
@@ -18,39 +18,15 @@ jobs:
       - name: Setup Databricks CLI
         uses: databricks/setup-cli@v0.222.0
 
-       # PASSO DE VERIFICAÇÃO ADICIONADO
-      - name: Print databricks.yml content for verification
-        run: |
-          echo "--- Conteúdo do databricks.yml que o Actions está lendo ---"
-          cat databricks.yml
-          echo "------------------------------------------------------------"
-
-      - name: Build Spark Config
-        id: build_spark_config
-        run: |
-          storage_name="adlshydra"
-          client_id="${{ secrets.AZURE_CLIENT_ID }}"
-          client_secret="${{ secrets.AZURE_CLIENT_SECRET }}"
-          tenant_id="${{ secrets.AZURE_TENANT_ID }}"
-          
-          spark_json=$(jq -c -n \
-            --arg s1 "spark.databricks.cluster.profile" --arg v1 "singleNode" \
-            --arg s2 "spark.master" --arg v2 "local[*]" \
-            --arg s3 "spark.hadoop.fs.azure.account.auth.type.${storage_name}.dfs.core.windows.net" --arg v3 "OAuth" \
-            --arg s4 "spark.hadoop.fs.azure.account.oauth.provider.type.${storage_name}.dfs.core.windows.net" --arg v4 "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider" \
-            --arg s5 "spark.hadoop.fs.azure.account.oauth2.client.id.${storage_name}.dfs.core.windows.net" --arg v5 "$client_id" \
-            --arg s6 "spark.hadoop.fs.azure.account.oauth2.client.secret.${storage_name}.dfs.core.windows.net" --arg v6 "$client_secret" \
-            --arg s7 "spark.hadoop.fs.azure.account.oauth2.client.endpoint.${storage_name}.dfs.core.windows.net" --arg v7 "https://login.microsoftonline.com/${tenant_id}/oauth2/token" \
-            '{($s1): $v1, ($s2): $v2, ($s3): $v3, ($s4): $v4, ($s5): $v5, ($s6): $v6, ($s7): $v7}')
-            
-          echo "spark_config_block=$spark_json" >> $GITHUB_OUTPUT
-
       - name: Deploy to Databricks
         run: databricks bundle deploy
         env:
           DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
           
-          BUNDLE_VAR_spark_config_block: ${{ steps.build_spark_config.outputs.spark_config_block }}
-          
+          # Passando cada variável que o databricks.yml espera
+          BUNDLE_VAR_client_id: ${{ secrets.AZURE_CLIENT_ID }}
+          BUNDLE_VAR_client_secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          BUNDLE_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
           BUNDLE_VAR_eh_connection_string: ${{ secrets.EH_CONNECTION_STRING }}
+          BUNDLE_VAR_storage_account_name: "adlshydra"
