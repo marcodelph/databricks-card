@@ -1,14 +1,9 @@
-# Arquivo: databricks.yml - Versão Final e Limpa
-
 bundle:
   name: hydra-anomaly-pipeline
 
 variables:
-  client_id: { type: string, description: "Azure SP Client ID" }
-  client_secret: { type: string, description: "Azure SP Client Secret" }
-  tenant_id: { type: string, description: "Azure Tenant ID" }
+  spark_config_block: { type: string, description: "Bloco completo da Spark Config" }
   eh_connection_string: { type: string, description: "Event Hubs Connection String" }
-  storage_account_name: { type: string, description: "Nome da Conta de Armazenamento ADLS" }
 
 resources:
   jobs:
@@ -25,17 +20,13 @@ resources:
           - maven: { coordinates: "com.microsoft.azure:azure-eventhubs-spark_2.12:2.3.22" }
           - maven: { coordinates: "com.amazon.deequ:deequ:2.0.6-spark-3.4" }
           - pypi: { package: "pydeequ==1.1.0" }
-        spark_conf:
-          spark.databricks.cluster.profile: "singleNode"
-          spark.master: "local[*]"
-          spark.hadoop.fs.azure.account.auth.type.${var.storage_account_name}.dfs.core.windows.net: "OAuth"
-          spark.hadoop.fs.azure.account.oauth.provider.type.${var.storage_account_name}.dfs.core.windows.net: "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider"
-          spark.hadoop.fs.azure.account.oauth2.client.id.${var.storage_account_name}.dfs.core.windows.net: "${var.client_id}"
-          spark.hadoop.fs.azure.account.oauth2.client.secret.${var.storage_account_name}.dfs.core.windows.net: "${var.client_secret}"
-          spark.hadoop.fs.azure.account.oauth2.client.endpoint.${var.storage_account_name}.dfs.core.windows.net: "https://login.microsoftonline.com/${var.tenant_id}/oauth2/token"
+        
+        spark_conf: "${json_decode(var.spark_config_block)}"
+        
         spark_env_vars:
           EVENT_HUB_CONNECTION_STRING: "${var.eh_connection_string}"
           SPARK_VERSION: "3.5"
+
 
       tasks:
         - task_key: "Atualizar_Perfis_Batch"
