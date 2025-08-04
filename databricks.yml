@@ -28,11 +28,12 @@ resources:
         spark_conf:
           spark.databricks.cluster.profile: "singleNode"
           spark.master: "local[*]"
-          spark.hadoop.fs.azure.account.auth.type.${var.storage_account_name}.dfs.core.windows.net: "OAuth"
-          spark.hadoop.fs.azure.account.oauth.provider.type.${var.storage_account_name}.dfs.core.windows.net: "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider"
-          spark.hadoop.fs.azure.account.oauth2.client.id.${var.storage_account_name}.dfs.core.windows.net: "${var.client_id}"
-          spark.hadoop.fs.azure.account.oauth2.client.secret.${var.storage_account_name}.dfs.core.windows.net: "${var.client_secret}"
-          spark.hadoop.fs.azure.account.oauth2.client.endpoint.${var.storage_account_name}.dfs.core.windows.net: "https://login.microsoftonline.com/${var.tenant_id}/oauth2/token"
+          "spark.hadoop.fs.azure.account.auth.type.${var.storage_account_name}.dfs.core.windows.net": "OAuth"
+          "spark.hadoop.fs.azure.account.oauth.provider.type.${var.storage_account_name}.dfs.core.windows.net": "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider"
+          "spark.hadoop.fs.azure.account.oauth2.client.id.${var.storage_account_name}.dfs.core.windows.net": "${var.client_id}"
+          "spark.hadoop.fs.azure.account.oauth2.client.secret.${var.storage_account_name}.dfs.core.windows.net": "${var.client_secret}"
+          "spark.hadoop.fs.azure.account.oauth2.client.endpoint.${var.storage_account_name}.dfs.core.windows.net": "https://login.microsoftonline.com/${var.tenant_id}/oauth2/token"
+
         spark_env_vars:
           EVENT_HUB_CONNECTION_STRING: "${var.eh_connection_string}"
           SPARK_VERSION: "3.5"
